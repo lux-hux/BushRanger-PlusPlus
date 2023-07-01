@@ -1,0 +1,25 @@
+Notes: 
+
+handle events - move the player depending on input
+
+update - change the sprite screen of player based on time
+
+positionCamera - change where the camera is positioned in respect to the player
+
+drawFigures - choose where to render the player 
+
+_________________________ 
+
+30/01/2023
+
+pure virtual functions cannot have their paramaters changed in a derived class. 
+
+there appears to be a technical workaround but not anything im willing to delve into.
+
+_________________________ 
+
+01/07/2023 
+
+the player movement function I wrote in the c++ version is not as smooth as the c version 
+
+delving into the difference 
