@@ -231,6 +231,8 @@ class Game
 
     void moveEnemies(playerCharacter& player, bulletClassManager& bulletManager);
     
+    void doAnimation(playerCharacter& player);
+
     SDL_Texture *loadTexture(std::string fileName);
 
     bool running(){return m_bRunning;}

@@ -178,6 +178,10 @@ void Game::handleEvents(playerCharacter& mainCharacter)
 {
     SDL_Event ev;
 
+    mainCharacter.face_left = false;
+    mainCharacter.face_right = false;
+    mainCharacter.moving = false;
+
     while(SDL_PollEvent(&ev))
     {
         switch(ev.type)
@@ -194,15 +198,22 @@ void Game::handleEvents(playerCharacter& mainCharacter)
                 {
                     case SDLK_UP:
                         mainCharacter.speedy = -1;
+                        mainCharacter.moving = true;
                         break;
                     case SDLK_DOWN: 
                         mainCharacter.speedy = 1;
+                        mainCharacter.moving = true;
                         break;
                     case SDLK_RIGHT:
                         mainCharacter.speedx = 1;
+                        mainCharacter.face_right = true; 
+                        mainCharacter.moving = true;
+                    
                         break;
                     case SDLK_LEFT:
                         mainCharacter.speedx = -1;
+                        mainCharacter.face_right = true;
+                        mainCharacter.moving = true;
                         break;
                 }
 
@@ -276,6 +287,8 @@ playerCharacter::playerCharacter()
     pos.w = 80;
 
     pos.h = 140;
+
+    animFrame = 0;
 
     // I don't know why, but explicitly referring to SDL_Rect attributes in the
     // constructor leads to a seg fault (in case of 0'd values) or bus error (in case of != 0)
@@ -387,6 +400,11 @@ void enemyCharacter::setPos(int x, int y)
 
 void playerCharacter::move() 
 {
+
+    if(alive == DEAD){
+        return; 
+    }
+
     pos.x += speedx *4;
     pos.y += speedy *4;
 
@@ -430,6 +448,86 @@ void Game::positionCamera(playerCharacter& player)
 
 }
 
+
+void Game::doAnimation(playerCharacter& player){
+
+    if(player.alive == DEAD)
+    {
+
+        if(gameTime % 10 == 0){
+            switch(player.animFrame){
+            case 4:
+                player.animFrame = 5; 
+                break;
+            case 5:
+                player.animFrame = 6; 
+                break;
+            case 6:
+                player.animFrame = 7; 
+                break;
+            case 7:
+                player.animFrame= 8; 
+                break;
+            case 8:
+                player.animFrame = 9; 
+                break;
+            case 9:
+                player.animFrame = 10; 
+                break;
+            case 10:
+                break;
+            default:
+                player.animFrame = 5;
+            }
+        }
+    } else if (player.moving == 1){
+
+        std::cout << "player is moving" << player.animFrame << std::endl;
+
+// Animate player when strafing left or right 
+
+    if(player.face_left == true || player.face_right == true){
+        if(gameTime % 10 == 0){
+            if(player.animFrame == 2){
+                player.animFrame = 3;
+            }else if(player.animFrame == 3){
+                player.animFrame = 2;
+            }else{
+                player.animFrame = 2;
+            }
+        }
+
+    }else{
+
+// |======= Animate player when walking forward or downward
+
+        if(gameTime % 10 == 0){
+            if(player.animFrame == 0){
+                 player.animFrame = 1;
+             }else if(player.animFrame == 1){
+                player.animFrame = 0;
+             }else{
+                player.animFrame = 0;
+             }
+         }
+    }
+
+// |======= Return player to default state if not shot or moving 
+}
+else
+{
+    player.animFrame = 0;
+}
+
+
+
+
+
+
+
+}
+
+
 void Game::drawFigures(playerCharacter& player, bulletClassManager& bulletManager)
 {
 
@@ -437,7 +535,7 @@ void Game::drawFigures(playerCharacter& player, bulletClassManager& bulletManage
 
     player.rect_player_dest = {player.pos.x - camera.x, player.pos.y - camera.y, PLAYER_WIDTH , PLAYER_HEIGHT};
 
-    SDL_RenderCopyEx(renderer, player.image[0], &player.rect_player_source, &player.rect_player_dest, 0, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, player.image[player.animFrame], &player.rect_player_source, &player.rect_player_dest, 0, NULL, SDL_FLIP_NONE);
 
     for(std::vector<enemyCharacter*>::size_type i = 0; i !=characterVector.size(); i++)
      {
@@ -518,7 +616,9 @@ void Game::update(playerCharacter& player, bulletClassManager& bulletManager)
         (*it)->x + 8 < player.pos.x + PLAYER_WIDTH && (*it)->x > player.pos.x && \
         (*it)->y + 8 < player.pos.y + PLAYER_HEIGHT && (*it)->y > player.pos.y)
         {
-                player.alive = false;
+                player.alive = DEAD;
+
+                std::cout << "Player is dead" << std::endl;
             
                 delete *it;
 
@@ -539,7 +639,7 @@ void Game::update(playerCharacter& player, bulletClassManager& bulletManager)
 
 void playerCharacter::fireBullet(bulletClassManager& bulletManager)
 {
-    if(fire == 1)
+    if(fire == 1 && alive == ALIVE)
     {
 
         reloading = 50; 

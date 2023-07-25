@@ -90,6 +90,8 @@ int main(int argc, char* argv[])
 
         g_game->positionCamera(mainCharacter); 
 
+        g_game->doAnimation(mainCharacter);
+
         g_game->drawFigures(mainCharacter, bulletManager);
 
         g_game->moveEnemies(mainCharacter, bulletManager);
