@@ -174,77 +174,101 @@ void Game::initSDL()
 
 }
 
+
+// --------------------------------------
+
 void Game::handleEvents(playerCharacter& mainCharacter)
 {
-    SDL_Event ev;
+	SDL_Event event;
 
-    mainCharacter.face_left = false;
-    mainCharacter.face_right = false;
-    mainCharacter.moving = false;
-
-    while(SDL_PollEvent(&ev))
-    {
-        switch(ev.type)
-        {
-            case SDL_QUIT:
-
-                m_bRunning = false;
-
+	while (SDL_PollEvent(&event)){
+		switch (event.type){
+			case SDL_QUIT:
+            case SDLK_ESCAPE:
+				m_bRunning = false;
+				break;
+            case SDL_KEYDOWN: 
+                doKeyDown(&event.key);
                 break;
-
-            case SDL_KEYDOWN:
-
-                switch(ev.key.keysym.sym)
-                {
-                    case SDLK_UP:
-                        mainCharacter.speedy = -1;
-                        mainCharacter.moving = true;
-                        break;
-                    case SDLK_DOWN: 
-                        mainCharacter.speedy = 1;
-                        mainCharacter.moving = true;
-                        break;
-                    case SDLK_RIGHT:
-                        mainCharacter.speedx = 1;
-                        mainCharacter.face_right = true; 
-                        mainCharacter.moving = true;
-                    
-                        break;
-                    case SDLK_LEFT:
-                        mainCharacter.speedx = -1;
-                        mainCharacter.face_right = true;
-                        mainCharacter.moving = true;
-                        break;
-                }
-
-                break;
-            
             case SDL_KEYUP:
-               
-                switch(ev.key.keysym.sym){
-                    
-                    case SDLK_UP:
-                        mainCharacter.speedy = 0;
-                        break;
-                    case SDLK_DOWN: 
-                        mainCharacter.speedy = 0;
-                        break;
-                    case SDLK_RIGHT:
-                        mainCharacter.speedx = 0;
-                        break;
-                    case SDLK_LEFT:
-                        mainCharacter.speedx = 0;
-                        break;
-                    case SDLK_SPACE:
-                        mainCharacter.fire = 1;
-                        break;
-                }
-
+                doKeyUp(&event.key);
                 break;
-        }
-        
-    }
+			default:
+				break;
+		}
+	}
 }
+
+void Game::doKeyDown(SDL_KeyboardEvent *event)
+{
+	if (event->repeat == 0)
+	{
+		if (event->keysym.scancode == SDL_SCANCODE_UP)
+		{
+			up = true;
+		}
+
+		if (event->keysym.scancode == SDL_SCANCODE_DOWN)
+		{
+			down = true;
+		}
+
+		if (event->keysym.scancode == SDL_SCANCODE_LEFT)
+		{
+			left = true;
+		}
+
+		if (event->keysym.scancode == SDL_SCANCODE_RIGHT)
+		{
+			right = true;
+		}
+
+        if (event->keysym.scancode == SDL_SCANCODE_SPACE)
+        {
+	        fire = true;
+        }
+
+	}
+}
+
+
+void Game::doKeyUp(SDL_KeyboardEvent *event)
+{
+	if (event->repeat == 0)
+	{
+		if (event->keysym.scancode == SDL_SCANCODE_UP)
+		{
+			up = false;
+            
+		}
+
+		if (event->keysym.scancode == SDL_SCANCODE_DOWN)
+		{
+			down = false;
+            
+		}
+
+		if (event->keysym.scancode == SDL_SCANCODE_LEFT)
+		{
+			left = false;
+		}
+
+		if (event->keysym.scancode == SDL_SCANCODE_RIGHT)
+		{
+			right = false;
+		}
+
+        if (event->keysym.scancode == SDL_SCANCODE_SPACE)
+        {
+	        fire = false;
+         
+        }
+    }
+
+}
+
+
+// --------------------------------------
 
 void Game::prepareScene()
 {
@@ -398,22 +422,72 @@ void enemyCharacter::setPos(int x, int y)
 }
 
 
-void playerCharacter::move() 
+void Game::move(playerCharacter& player) 
 {
 
-    if(alive == DEAD){
+    player.moving = false;
+    player.face_left = false;
+    player.face_right = false;
+
+    if(player.alive == DEAD){
         return; 
     }
 
-    pos.x += speedx *4;
-    pos.y += speedy *4;
+    if(player.reloading > 0)
+    {
+        player.reloading--;
+    }
 
-    reloading -= 1; 
+    if(fire == true && player.reloading == 0)
+    {
+        player.fire = true;
+    }
+
+    if (up)
+    {
+
+        std::cout << player.pos.y << std::endl;
+
+        player.pos.y -= PLAYER_SPEED;
+        player.moving = true;
+
+        std::cout << player.pos.y << std::endl;
+    }
+
+    if (down)
+    {
+        player.pos.y += PLAYER_SPEED;
+        player.moving = true;
+    }
+
+    if (left)
+    {
+        player.pos.x -= PLAYER_SPEED;
+        player.moving = true;
+        player.face_left = true;
+        player.flip = SDL_FLIP_HORIZONTAL;
+
+
+    }
+
+    if (right)
+    {
+        player.pos.x += PLAYER_SPEED;
+        player.moving = true;
+        player.face_right = true;
+        player.flip = SDL_FLIP_NONE;
+
+    }
 
 }
 
 
  void enemyCharacter::move()
+ {
+
+ }
+
+  void playerCharacter::move()
  {
 
  }
@@ -482,8 +556,6 @@ void Game::doAnimation(playerCharacter& player){
         }
     } else if (player.moving == 1){
 
-        std::cout << "player is moving" << player.animFrame << std::endl;
-
 // Animate player when strafing left or right 
 
     if(player.face_left == true || player.face_right == true){
@@ -535,7 +607,7 @@ void Game::drawFigures(playerCharacter& player, bulletClassManager& bulletManage
 
     player.rect_player_dest = {player.pos.x - camera.x, player.pos.y - camera.y, PLAYER_WIDTH , PLAYER_HEIGHT};
 
-    SDL_RenderCopyEx(renderer, player.image[player.animFrame], &player.rect_player_source, &player.rect_player_dest, 0, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, player.image[player.animFrame], &player.rect_player_source, &player.rect_player_dest, 0, NULL, player.flip);
 
     for(std::vector<enemyCharacter*>::size_type i = 0; i !=characterVector.size(); i++)
      {
@@ -617,8 +689,6 @@ void Game::update(playerCharacter& player, bulletClassManager& bulletManager)
         (*it)->y + 8 < player.pos.y + PLAYER_HEIGHT && (*it)->y > player.pos.y)
         {
                 player.alive = DEAD;
-
-                std::cout << "Player is dead" << std::endl;
             
                 delete *it;
 
@@ -639,7 +709,7 @@ void Game::update(playerCharacter& player, bulletClassManager& bulletManager)
 
 void playerCharacter::fireBullet(bulletClassManager& bulletManager)
 {
-    if(fire == 1 && alive == ALIVE)
+    if(fire == true && alive == ALIVE)
     {
 
         reloading = 50; 
@@ -662,7 +732,7 @@ void playerCharacter::fireBullet(bulletClassManager& bulletManager)
 
         bulletManager.bulletVector.push_back(new_bullet);
 
-        fire = 0;
+        fire = false;
 
     }
 

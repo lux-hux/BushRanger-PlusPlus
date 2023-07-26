@@ -20,6 +20,8 @@
 #define ENEMY_HEIGHT 48
 #define ENEMY_WIDTH 48
 
+#define PLAYER_SPEED 4
+
 #define PLAYER true 
 #define ENEMY false
 
@@ -82,10 +84,6 @@ class Character
 {
     public:
 
-        int speedy = {0};
-
-        int speedx = {0};
-
         int reloading = {15};
 
         bool alive = {ALIVE};
@@ -97,6 +95,8 @@ class Character
         bool moving = {false};
 
         bool characterMoving = {false};
+
+        SDL_RendererFlip flip;
 
    protected:
         virtual void setSize(int w, int h) = 0;
@@ -221,6 +221,12 @@ class Game
 
     void handleEvents(playerCharacter& mainCharacter);
 
+    void doKeyDown(SDL_KeyboardEvent *event);
+
+    void doKeyUp(SDL_KeyboardEvent *event);
+
+    void move(playerCharacter& player);
+
     void setBackgroundCoordinates();
 
     void incrementEnemies();
@@ -231,6 +237,8 @@ class Game
 
     void moveEnemies(playerCharacter& player, bulletClassManager& bulletManager);
     
+    
+
     void doAnimation(playerCharacter& player);
 
     SDL_Texture *loadTexture(std::string fileName);
@@ -248,6 +256,16 @@ class Game
     int noEnemies;
 
     int gameTime;
+
+    bool up = {false};
+
+    bool down = {false};
+
+    bool left = {false};
+
+    bool right = {false};
+
+    bool fire = {false};
 
 };
 
