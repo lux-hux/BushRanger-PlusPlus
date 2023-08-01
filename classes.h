@@ -172,9 +172,9 @@ class enemyCharacter: public Character
 
     int animFrame;
 
-    SDL_Rect pos;
+    SDL_Texture *image[6];
 
-    SDL_Texture * image;
+    SDL_Rect pos;
 
     SDL_Rect rect_player_dest;
 

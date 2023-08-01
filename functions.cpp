@@ -346,13 +346,13 @@ enemyCharacter::enemyCharacter()
 
     pos.y = 1500;
 
-    image = NULL;
-
     pos.w = 80;
 
     pos.h = 140;
 
     rect_player_source = {0, 0,80,160};
+
+    animFrame = 0;
 
 }
 
@@ -386,12 +386,18 @@ enemyCharacter::~enemyCharacter()
 {
 
     std::cout << "enemyCharacter desconstructor" << std::endl;
-
-    if(image != NULL)
+    if(image[0] != NULL)
     {
-        SDL_DestroyTexture(image);
 
-        image = NULL;
+        for(unsigned int i = 0; i < sizeof(image); i++ ){
+
+        SDL_DestroyTexture(image[i]);
+
+        std::cout << i << std::endl;
+
+        image[i] = NULL;
+
+        }
     }
 }
 
@@ -592,10 +598,19 @@ else
 }
 
 
-
-
-
-
+  for(std::vector<enemyCharacter*>::size_type i = 0; i !=characterVector.size(); i++){
+    if(characterVector[i]->alive == DEAD && gameTime % 10 == 0){
+            if (characterVector[i]->animFrame == 0){
+                characterVector[i]->animFrame = 1;
+            } else if (characterVector[i]->animFrame == 1){
+                characterVector[i]->animFrame = 2;
+            } else if (characterVector[i]->animFrame == 2){
+                characterVector[i]->animFrame = 3; 
+            }else if (characterVector[i]->animFrame == 3){
+                characterVector[i]->animFrame = 4;
+            }
+        }
+    }
 
 }
 
@@ -614,7 +629,7 @@ void Game::drawFigures(playerCharacter& player, bulletClassManager& bulletManage
 
         characterVector[i]->rect_player_dest = {characterVector[i]->pos.x - camera.x, characterVector[i]->pos.y - camera.y, ENEMY_WIDTH , ENEMY_HEIGHT};
 
-        SDL_RenderCopyEx(renderer, characterVector[i]->image, &(characterVector[i]->rect_player_source), &(characterVector[i]->rect_player_dest), 0, NULL, SDL_FLIP_NONE);
+        SDL_RenderCopyEx(renderer, characterVector[i]->image[characterVector[i]->animFrame], &(characterVector[i]->rect_player_source), &(characterVector[i]->rect_player_dest), 0, NULL, SDL_FLIP_NONE);
 
      }
 

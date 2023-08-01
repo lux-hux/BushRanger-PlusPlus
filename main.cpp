@@ -74,7 +74,15 @@ int main(int argc, char* argv[])
 
             new_enemy = new enemyCharacter();
 
-            new_enemy->image = g_game->loadTexture("Textures/enemy.png"); 
+            new_enemy->image[0] = g_game->loadTexture("Textures/enemy.png"); 
+
+            new_enemy->image[1] = g_game->loadTexture("Textures/enemy_shot1.png"); 
+
+            new_enemy->image[2] = g_game->loadTexture("Textures/enemy_shot2.png"); 
+
+            new_enemy->image[3] = g_game->loadTexture("Textures/enemy_shot3.png"); 
+
+            new_enemy->image[4] = g_game->loadTexture("Textures/enemy_shot4.png"); 
 
             new_enemy->setSize(ENEMY_WIDTH, ENEMY_HEIGHT);
 
